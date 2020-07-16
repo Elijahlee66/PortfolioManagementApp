@@ -2,10 +2,10 @@ initDate = '10-Mar-2017';
 endDate = datestr(now,'dd-mmm-yyyy');
 Bench = '^GSPC';
 MyPortfolio = {'SPY' 'SPYV' 'SPYG' 'BABA' 'BRK-B' 'AGG' 'COST' 'WMT'...
-    'PGR' 'XLU' 'XLP' 'TCEHY' 'VTEB' 'VEA' 'KR'};
-Weight = [8 3 11 4 6 2 1 2 3 2 2 3 3 1 1];
+    'PGR' 'XLU' 'XLP' 'TCEHY' 'VTEB' 'VEA' 'KR' 'JD' 'DAL'};
+Weight = [8 3 11 4 6 2 1 2 3 2 2 4 3 1 1 1 2];
 AveCost = [311.72 30.2 36.70 179.07 203.66 111.21 298.16 132.33 85.85 ...
-    63.94 62.18 57.52 54.42 43.73 31.94];
+    63.94 62.18 59.83 54.42 43.73 31.94 60.50 27.74];
 
 Quantity = length(MyPortfolio);
 
@@ -65,7 +65,7 @@ for i = 1:PropQuantity
 end
 
 
-PropWeight = [2 5 4 3 5 1 3 1 3 4 5];
+PropWeight = [2 0 4 3 5 1 3 1 3 4 5];
 PropPortfolio = sum((PropWeight .* PropPortHist_Close),2);
 % Why divide by mean? Because it is unrealistic to assume that I could have
 % picked these stocks at 'initDate'. But it is relatively reasonable to
@@ -83,7 +83,8 @@ Figure1 = plot(Benchmark_Neutralized,'-.');
 hold off
 title('Paper Portfolio vs Benchmark')
 ylabel('Relative Price Change')
-legend('Holding Portfolio','Proposed Portfolio','Benchmark')
+legend('Holding Portfolio','Proposed Portfolio','Benchmark',...
+    'Location','southeast')
 
 
 % Calculate the return of my Holding. This not include the income
