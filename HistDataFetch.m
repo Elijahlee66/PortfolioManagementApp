@@ -93,9 +93,10 @@ end
 
 Rf = 0.005;
 options = optimset('Display','iter');
-InitialWeight = ones(1,PropQuantity);
+% InitialWeight = ones(1,PropQuantity);
+InitialWeight = PropWeight;
 OptWeight = fminsearch(@MaxSharpeRatio,InitialWeight,options,PropPortHist_Close,Rf);
-OptWeight = floor(abs(OptWeight));
+OptWeight = round(OptWeight);
 
 
 OptPortfolio = sum((OptWeight .* PropPortHist_Close),2);
