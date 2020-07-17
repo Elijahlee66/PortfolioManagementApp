@@ -1,5 +1,6 @@
-initDate = '10-Mar-2017';
-endDate = datestr(now,'dd-mmm-yyyy');
+initDate = '1-Nov-2019';
+endDate =  '1-Apr-2020';
+% endDate = datestr(now,'dd-mmm-yyyy');
 Bench = '^GSPC';
 MyPortfolio = {'SPY' 'SPYV' 'SPYG' 'BABA' 'BRK-B' 'AGG' 'COST' 'WMT'...
     'PGR' 'XLU' 'XLP' 'TCEHY' 'VTEB' 'VEA' 'KR' 'JD' 'DAL'};
@@ -42,36 +43,27 @@ BenchReturnRate = BenchChange/BenchHist_CloseAdj(1);
 PaperPortfolio = sum((Weight .* PortHist_Close),2);
 PaperPortfolio_Neutralized = PaperPortfolio/(sum(PortHist_Close(1,:) .* Weight));
 Benchmark_Neutralized = BenchHist_Close / BenchHist_Close(1);
-DailyPaperReturn = zeros(TDays -1,1);
-DailyBenchReturn = zeros(TDays -1,1);
 
-for i = 2:TDays
-    DailyPaperReturn(i-1) = log(PaperPortfolio(i,:) ...
-        ./ PaperPortfolio(i-1,:));
-    DailyBenchReturn(i-1) = log(BenchHist_Close(i,:) ...
-        ./ BenchHist_Close(i-1, :));
-end
 
 % Proposed New Portfolio
-PropSelection = {'VUG' 'AAPL' 'MEDP' 'JD' 'DAL' 'LULU' 'MCD' 'NFLX' 'DG' 'TCEHY' 'PGR'};
+PropSelection = {'AAPL' 'JD' 'DAL' 'MCD' 'DG' 'KR' 'COST' 'TCEHY' 'PGR'};
 PropQuantity = length(PropSelection);
 PropPortHist_Close = zeros(TDays,PropQuantity);
 
 for i = 1:PropQuantity
-
     symbol = PropSelection{i};
     prop = getMarketDataViaYahoo(symbol, initDate,endDate);
     PropPortHist_Close(:,i) = table2array(prop(:,5));
 end
 
 
-PropWeight = [2 0 4 3 5 1 3 1 3 4 5];
+PropWeight = [2 1 5 3 5 20 3 4 5];
 PropPortfolio = sum((PropWeight .* PropPortHist_Close),2);
 % Why divide by mean? Because it is unrealistic to assume that I could have
 % picked these stocks at 'initDate'. But it is relatively reasonable to
 % assume I can make my cost at the average level of a certain period of
 % time. 
-PropPortfolio_Neutralized = PropPortfolio ./ mean(PropPortfolio);
+PropPortfolio_Neutralized = PropPortfolio ./ PropPortfolio(1);
 
 
 % Create Line Chart 
@@ -87,4 +79,43 @@ legend('Holding Portfolio','Proposed Portfolio','Benchmark',...
     'Location','southeast')
 
 
+[DailyPaperReturn,DailyBenchReturn,DailyPropReturn] = deal(zeros(TDays -1,1));
+
 % Calculate the return of my Holding. This not include the income
+for i = 2:TDays
+    DailyPaperReturn(i-1) = log(PaperPortfolio(i,:) ...
+        ./ PaperPortfolio(i-1,:));
+    DailyBenchReturn(i-1) = log(BenchHist_Close(i,:) ...
+        ./ BenchHist_Close(i-1, :));
+    DailyPropReturn(i-1) = log(PropPortfolio(i,:)...
+        ./ PropPortfolio(i-1,:));
+end
+
+Rf = 0.005;
+options = optimset('Display','iter');
+InitialWeight = ones(1,PropQuantity);
+OptWeight = fminsearch(@MaxSharpeRatio,InitialWeight,options,PropPortHist_Close,Rf);
+OptWeight = floor(abs(OptWeight));
+
+
+OptPortfolio = sum((OptWeight .* PropPortHist_Close),2);
+% Why divide by mean? Because it is unrealistic to assume that I could have
+% picked these stocks at 'initDate'. But it is relatively reasonable to
+% assume I can make my cost at the average level of a certain period of
+% time. 
+OptPortfolio_Neutralized = OptPortfolio ./ OptPortfolio(1);
+
+% Display on Chart
+figure
+plot(OptPortfolio_Neutralized);
+hold on
+plot(PropPortfolio_Neutralized);
+Figure2 = plot(Benchmark_Neutralized,'-.');
+hold off
+title('Optimized Portfolio vs Proposed Portfolio')
+ylabel('Relative Price Change')
+legend('Optimized Portfolio','Proposed Portfolio','Benchmark',...
+    'Location','southeast')
+WeightComparison = table(PropSelection', PropWeight', OptWeight',...
+    'VariableNames',{'Stock','ProposedWeight','OptimizedWeight'});
+disp(WeightComparison);
