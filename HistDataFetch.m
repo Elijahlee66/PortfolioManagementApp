@@ -1,8 +1,8 @@
-<<<<<<< HEAD
+clear All;
+clc;
+
 initDate = '20-Dec-2019';
-=======
-initDate = '1-Nov-2019';
->>>>>>> 1578914f36cfec625382fa45b1d816ab95e443f0
+% initDate = '1-Nov-2019';
 % endDate =  '1-Apr-2020';
 endDate = datestr(now,'dd-mmm-yyyy');
 Bench = '^GSPC';
