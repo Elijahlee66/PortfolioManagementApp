@@ -1,12 +1,16 @@
+<<<<<<< HEAD
 initDate = '20-Dec-2019';
+=======
+initDate = '1-Nov-2019';
+>>>>>>> 1578914f36cfec625382fa45b1d816ab95e443f0
 % endDate =  '1-Apr-2020';
 endDate = datestr(now,'dd-mmm-yyyy');
 Bench = '^GSPC';
 MyPortfolio = {'SPY' 'SPYV' 'SPYG' 'BABA' 'BRK-B' 'AGG' 'COST' 'WMT'...
-    'PGR' 'XLU' 'XLP' 'TCEHY' 'VTEB' 'VEA' 'KR' 'JD' 'DAL'};
-Weight = [8 3 11 4 6 2 1 2 3 2 2 4 3 1 1 1 2];
+    'PGR' 'XLU' 'XLP' 'TCEHY' 'VTEB' 'VEA' 'KR' 'JD' 'DAL' 'AAPL'};
+Weight = [8 3 11 4 6 2 1 2 3 2 2 4 3 1 1 1 2 1];
 AveCost = [311.72 30.2 36.70 179.07 203.66 111.21 298.16 132.33 85.85 ...
-    63.94 62.18 59.83 54.42 43.73 31.94 60.50 27.74];
+    63.94 62.18 59.83 54.42 43.73 31.94 60.50 27.74 385.68];
 
 Quantity = length(MyPortfolio);
 
@@ -96,9 +100,10 @@ end
 
 Rf = 0.01/360;
 options = optimset('Display','iter');
-InitialWeight = ones(1,PropQuantity);
+% InitialWeight = ones(1,PropQuantity);
+InitialWeight = PropWeight;
 OptWeight = fminsearch(@MaxSharpeRatio,InitialWeight,options,PropPortHist_Close,Rf);
-OptWeight = floor(abs(OptWeight));
+OptWeight = round(OptWeight);
 
 
 OptPortfolio = sum((OptWeight .* PropPortHist_Close),2);
