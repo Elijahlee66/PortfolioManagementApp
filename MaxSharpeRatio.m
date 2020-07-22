@@ -1,5 +1,5 @@
 function SharpeRatio = MaxSharpeRatio(Weight, Hist_Close, Rf)
-    Weight = abs(Weight);
+%     Weight = abs(Weight);
     PaperPortfolio = sum((Weight .* Hist_Close),2);
 
     TDays = size(PaperPortfolio,1);
@@ -13,7 +13,7 @@ function SharpeRatio = MaxSharpeRatio(Weight, Hist_Close, Rf)
     AveReturn = mean(DailyReturn);
     Volatility = std(DailyReturn);
     
-    if min(Weight) >= 1 && max(Weight) <= 30
+    if min(Weight) >= 0 && max(Weight) <= 30
         SharpeRatio = -((AveReturn-Rf)/Volatility);
     else
         SharpeRatio = 100;
