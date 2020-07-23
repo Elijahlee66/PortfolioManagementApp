@@ -50,7 +50,8 @@ Benchmark_Neutralized = BenchHist_Close / BenchHist_Close(1);
 
 
 % Proposed New Portfolio
-PropSelection = {'AAPL' 'JD' 'DAL' 'MCD' 'DG' 'KR' 'COST' 'TCEHY' 'PGR' 'NUSI'};
+PropSelection = {'AAPL' 'JD' 'DAL' 'MCD' 'DG' 'KR' 'COST' 'TCEHY' 'PGR' ...
+    'NUSI' 'KO' 'JNJ'};
 PropQuantity = length(PropSelection);
 PropPortHist_Close = zeros(TDays,PropQuantity);
 PropPortHist_Close_Adj = zeros(TDays,PropQuantity);
@@ -63,8 +64,9 @@ for i = 1:PropQuantity
 end
 
 
-PropWeight = [2 1 5 3 5 20 3 4 5 3];
+PropWeight = [2 1 5 3 5 20 3 4 5 3 10 3];
 PropPortfolio = sum((PropWeight .* PropPortHist_Close),2);
+
 % Why divide by mean? Because it is unrealistic to assume that I could have
 % picked these stocks at 'initDate'. But it is relatively reasonable to
 % assume I can make my cost at the average level of a certain period of
@@ -128,27 +130,38 @@ WeightComparison = table(PropSelection', PropWeight', OptWeight',...
     'VariableNames',{'Stock','ProposedWeight','OptimizedWeight'});
 disp(WeightComparison);
 
+% Only pick stocks that are not weighted 0
+OptShares = OptWeight(OptWeight >0);
+OptSelection = PropSelection(OptWeight>0);
+OptHist_Close_Adj = PropPortHist_Close_Adj(:,(OptWeight>0));
+
+
 % Manage the portfolio in the table
-HisPrice = [BenchHist_CloseAdj PropPortHist_Close_Adj];
+HisPrice = [BenchHist_CloseAdj OptHist_Close_Adj];
 HisPrice_T = array2table(HisPrice, 'VariableNames',...
-    ['SP500' string(PropSelection)]);
+    ['SP500' string(OptSelection)]);
 Timeline_Str = string(Timeline);
 % HisPrice_T = table(HisPrice_T,'RowNames',Timeline_Str);
 Timeline_T = table(Timeline,'VariableNames',{'DATA'});
 HisPrice_T = [Timeline_T HisPrice_T];
 
 % Create Return Table
-HisReturn = zeros(TDays -1,PropQuantity + 1);
+HisReturn = zeros(TDays -1,length(OptSelection) + 1);
 for i = 2:TDays
     HisReturn(i-1,:) = log(HisPrice(i,:) ./ HisPrice(i-1,:));
 end
 Timeline_R = Timeline_T.DATA(2:end);
 HisReturn_R = array2table(HisReturn, 'VariableNames',...
-    ['SP500' string(PropSelection)]);
+    ['SP500' string(OptSelection)]);
 Exp_Return = mean(HisReturn_R{:,:},1);
 Vol_Return = std(HisReturn_R{:,:},1);
 SharpeRatio = (Exp_Return - Rf) ./ Vol_Return;
 Summary_T = array2table([Exp_Return;Vol_Return;SharpeRatio],'VariableNames',...
-    ['SP500' string(PropSelection)]);
-Summary_T.Properties.RowNames = {'Exp_Return','Vol_Return','SharpeRatio'};
+    ['SP500' string(OptSelection)]);
+OptShares_T = array2table([0 OptShares],'VariableNames',...
+    ['SP500' string(OptSelection)]);
+Summary_T = [Summary_T;OptShares_T];
+Summary_T.Properties.RowNames = {'#Shares','Exp_Return','Vol_Return',...
+    'SharpeRatio'};
+
 disp(Summary_T);
